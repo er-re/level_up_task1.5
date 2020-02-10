@@ -13,18 +13,18 @@ class Migrate:
         self.update()
 
     def update_premium(self):
+        """Updating the premium sources at once step. They don't require further processing"""
         query = """UPDATE offer
         set "order" = 0
         where source_id in (SELECT id from source WHERE premium = 'true');"""
         with self.engine.connect() as con:
             statement = text(query)
-            res = con.execute(statement)
-            print(res.rowcount)
+            con.execute(statement)
 
     def fetch_product(self):
         Session = sessionmaker(bind=self.engine)
         session = Session()
-        for product in session.query(Product).yield_per(1):
+        for product in session.query(Product).filter(Product.has_migrated == False).yield_per(1):
             yield product
 
     def fetch_offer(self, product_id):
@@ -42,7 +42,12 @@ class Migrate:
                 offer.order = order_count
                 order_count += 1
                 session.query(Offer).filter(Offer.id == offer.id).update({'order': offer.order})
+
+            session.query(Product).filter(Product.id == product.id).update({'has_migrated': True})
+            try:
                 session.commit()
+            except:
+                session.rollback()
 
 
 if __name__ == '__main__':

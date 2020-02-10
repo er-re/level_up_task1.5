@@ -15,6 +15,7 @@ class Product(Base):
     __tablename__ = 'product'
     id = Column(INTEGER, primary_key=True)
     customer_id = Column(INTEGER, ForeignKey("customer.id"))
+    has_migrated = Column(BOOLEAN)
 
 
 class Source(Base):

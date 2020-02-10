@@ -17,6 +17,7 @@ class Factory:
 
     def fill_product(self):
         df = pd.DataFrame({'id': range(self.product), 'customer_id': np.random.randint(0, self.customer, size=(1, self.product))[0]})
+        df['has_migrated'] = False
         df.to_sql(Product.__tablename__, self.engine, if_exists='append', index=False)
 
     def fill_source(self):
